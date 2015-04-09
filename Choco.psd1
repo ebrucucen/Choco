@@ -26,4 +26,6 @@ Copyright = '(c) 2014 Sergei Vorobev. All rights reserved.'
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
 
+DscResourcesToExport = @('ChocoExe', 'ChocoPackage')
+
 }
