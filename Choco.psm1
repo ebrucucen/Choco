@@ -7,11 +7,11 @@ enum Ensure
 [DscResource()]
 class ChocoExe
 {
-    [DscResourceKey()][Ensure] $Ensure
+    [DscProperty(Key)][Ensure] $Ensure
     
     [void] Set()
     {
-        if($ensure -eq [Ensure]::Present)
+        if($this.ensure -eq [Ensure]::Present)
         {
             iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
         }
@@ -23,7 +23,7 @@ class ChocoExe
 
     [bool] Test() 
     {
-        if($ensure -eq [Ensure]::Present)        
+        if($this.ensure -eq [Ensure]::Present)        
         {
             return [bool](Get-Command -Name choco.exe*)
         }
@@ -33,9 +33,11 @@ class ChocoExe
         }        
     }
 
-    [System.Management.Automation.ApplicationInfo] Get()
+    [ChocoExe] Get()
     {
-        return Get-Command -Name choco.exe*
+        return [ChocoExe]@{ 
+            Ensure = [bool](Get-Command -Name choco.exe*) 
+        }
     }
 }
 
@@ -44,20 +46,20 @@ class ChocoExe
 class ChocoPackage
 {
     [Ensure] $Ensure
-    [DscResourceKey()] [string] $Name
+    [DscProperty(Key)] [string] $Name
     [string] $version
 
     [void] Set()
     {
-        if($ensure -eq [Ensure]::Present)
+        if($this.ensure -eq [Ensure]::Present)
         {
-            if ($version) 
+            if ($this.version) 
             {
-                choco install $Name -version $version
+                choco install $this.Name -version $this.version
             }
             else
             {
-                choco install $Name
+                choco install $this.Name
             }
         }
         else
@@ -68,9 +70,9 @@ class ChocoPackage
 
     [bool] Test() 
     {
-        if($ensure -eq [Ensure]::Present)        
+        if($this.ensure -eq [Ensure]::Present)        
         {
-            $out = choco list -localonly $Name
+            $out = choco list -localonly $this.Name
             return ($out -eq "No packages found.")
         }
         else
@@ -79,8 +81,12 @@ class ChocoPackage
         }        
     }
 
-    [string] Get()
+    [ChocoPackage] Get()
     {
-        return choco list -localonly $Name
+        return [ChocoPackage] @{
+            Ensure = [bool](choco list -localonly $this.Name)
+            Name = $this.Name
+            # todo version
+        }
     }
 }
