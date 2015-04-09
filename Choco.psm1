@@ -45,7 +45,7 @@ class ChocoExe
 [DscResource()]
 class ChocoPackage
 {
-    [Ensure] $Ensure
+    [DscProperty()] [Ensure] $Ensure = [Ensure]::Present
     [DscProperty(Key)] [string] $Name
     [string] $version
 
